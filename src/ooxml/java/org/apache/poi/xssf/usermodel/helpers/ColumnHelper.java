@@ -326,6 +326,14 @@ public class ColumnHelper {
         layout = new TextLayout(str.getIterator(), frc);
         int defaultCharWidth = (int)layout.getAdvance();
 
+        int numMergedRegions = sheet.getNumMergedRegions();
+
+        CellRangeAddress[] regions = new CellRangeAddress[numMergedRegions];
+        for (int i = 0; i < numMergedRegions; i++) {
+            CellRangeAddress region = sheet.getMergedRegion(i);
+            regions[i] = region;
+        }
+
         double width = -1;
         rows:
         for (Iterator it = sheet.rowIterator(); it.hasNext();) {
@@ -336,10 +344,11 @@ public class ColumnHelper {
                 continue;
             }
 
+            int rowNum = row.getRowNum();
             int colspan = 1;
-            for (int i = 0 ; i < sheet.getNumMergedRegions(); i++) {
-                CellRangeAddress region = sheet.getMergedRegion(i);
-                if (containsCell(region, row.getRowNum(), column)) {
+            for (int i = 0 ; i < numMergedRegions; i++) {
+                CellRangeAddress region = regions[i];
+                if (containsCell(region, rowNum, column)) {
                     if (!useMergedCells) {
                         // If we're not using merged cells, skip this one and move on to the next.
                         continue rows;
