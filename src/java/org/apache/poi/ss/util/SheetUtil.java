@@ -96,15 +96,50 @@ public class SheetUtil {
      * @return  the width in pixels
      */
     public static double getCellWidth(Cell cell, int defaultCharWidth, DataFormatter formatter, boolean useMergedCells) {
+        Sheet sheet = cell.getSheet();
 
+        CellRangeAddress[] regions = getMergedRegionArray(sheet);
+
+        return getCellWidth(cell, defaultCharWidth, formatter, useMergedCells, regions);
+    }
+
+    /**
+     * Get an array of 'merged regions' for the provided sheet
+     * 
+     * @param sheet Sheet to evaluate
+     * @return Array of CellRangeAddresses for merged regions in the sheet
+     */
+    private static CellRangeAddress[] getMergedRegionArray(Sheet sheet) {
+        int numMergedRegions = sheet.getNumMergedRegions();
+        CellRangeAddress[] regions = new CellRangeAddress[numMergedRegions];
+        for (int i = 0; i < numMergedRegions; i++) {
+            regions[i] = sheet.getMergedRegion(i);
+        }
+        return regions;
+    }
+
+    /**
+     *
+     * Compute width of a single cell, passing in data on merged regions for performance reasons, if being called
+     * multiple times in succession.
+     *
+     * @param cell the cell whose width is to be calculated
+     * @param defaultCharWidth the width of a single character
+     * @param formatter formatter used to prepare the text to be measured
+     * @param useMergedCells    whether to use merged cells
+     * @param regions array of 'merged regions' information for the sheet
+     * @return  the width in pixels
+     */
+    private static double getCellWidth(Cell cell, int defaultCharWidth, DataFormatter formatter, boolean useMergedCells,
+            CellRangeAddress[] regions) {
         Sheet sheet = cell.getSheet();
         Workbook wb = sheet.getWorkbook();
         Row row = cell.getRow();
         int column = cell.getColumnIndex();
 
         int colspan = 1;
-        for (int i = 0 ; i < sheet.getNumMergedRegions(); i++) {
-            CellRangeAddress region = sheet.getMergedRegion(i);
+        for (int i = 0 ; i < regions.length; i++) {
+            CellRangeAddress region = regions[i];
             if (containsCell(region, row.getRowNum(), column)) {
                 if (!useMergedCells) {
                     // If we're not using merged cells, skip this one and move on to the next.
@@ -218,6 +253,8 @@ public class SheetUtil {
         layout = new TextLayout(str.getIterator(), fontRenderContext);
         int defaultCharWidth = (int)layout.getAdvance();
 
+        CellRangeAddress[] regions = getMergedRegionArray(sheet);
+
         double width = -1;
         for (Row row : sheet) {
             Cell cell = row.getCell(column);
@@ -226,7 +263,7 @@ public class SheetUtil {
                 continue;
             }
 
-            double cellWidth = getCellWidth(cell, defaultCharWidth, formatter, useMergedCells);
+            double cellWidth = getCellWidth(cell, defaultCharWidth, formatter, useMergedCells, regions);
             width = Math.max(width, cellWidth);
         }
         return width;
@@ -255,6 +292,8 @@ public class SheetUtil {
         layout = new TextLayout(str.getIterator(), fontRenderContext);
         int defaultCharWidth = (int)layout.getAdvance();
 
+        CellRangeAddress[] regions = getMergedRegionArray(sheet);
+
         double width = -1;
         for (int rowIdx = firstRow; rowIdx <= lastRow; ++rowIdx) {
             Row row = sheet.getRow(rowIdx);
@@ -266,7 +305,7 @@ public class SheetUtil {
                     continue;
                 }
 
-                double cellWidth = getCellWidth(cell, defaultCharWidth, formatter, useMergedCells);
+                double cellWidth = getCellWidth(cell, defaultCharWidth, formatter, useMergedCells, regions);
                 width = Math.max(width, cellWidth);
             }
         }
