@@ -1,0 +1,27 @@
+<project name="Apache POI - deploy to Ivy repo" basedir="." default="ivyInstall"
+    xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <!-- Allow property overrides at a few levels -->
+    <property environment="env"/>
+    <property file="${user.home}/futrix.properties" />
+    <property file="${basedir}/conf/${user.name}.properties" />
+    <property file="${basedir}/conf/build.properties"/>
+    <property name="project.version" value="3.12.1-FUTRIX"/>
+
+    <ivy:settings file="ivysettings.xml"/>
+
+    <target name="ivyInstall">
+        <ivy:install organisation="org.apache.poi" module="poi" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+        <ivy:install organisation="org.apache.poi" module="poi-examples" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+        <ivy:install organisation="org.apache.poi" module="poi-excelant" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+        <ivy:install organisation="org.apache.poi" module="poi-ooxml" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+        <ivy:install organisation="org.apache.poi" module="poi-ooxml-schemas" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+        <ivy:install organisation="org.apache.poi" module="poi-scratchpad" revision="${project.version}"
+            from="local-maven" to="shared" overwrite="true"/>
+    </target>
+</project>

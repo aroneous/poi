@@ -47,8 +47,8 @@ under the License.
 
     <description>The Apache POI project Ant build.</description>
 
-    <property name="version.id" value="3.12"/>
-    <property name="version.rel" value="REL_3_12_FINAL"/>
+    <property name="version.id" value="3.12.1-FUTRIX"/>
+    <property name="version.rel" value="REL_3_12_1_FUTRIX"/>
 
     <property environment="env"/>
     <!-- the repository to download jars from -->
@@ -360,6 +360,7 @@ under the License.
     - jar         Produce jar files
     - site        Generate all documentation (Requires Apache Forrest)
     - dist        Create a distribution (Requires Apache Forrest)
+    - dist-simple Create a distribution, skipping the bits that require Apache Forrest
         </echo>
     </target>
 
@@ -1348,7 +1349,11 @@ under the License.
                 </replacetokens>
             </filterchain>
         </copy>
-        <copy file="maven/mvn-deploy.sh" todir="${dist.dir}">
+        <copy todir="${dist.dir}">
+            <resources>
+                <file name="maven/mvn-deploy.sh"/>
+                <file name="maven/mvn-install-local.sh"/>
+            </resources>
             <filterchain>
                 <replacetokens>
                     <token key="VERSION" value="${version.id}"/>
@@ -1604,6 +1609,10 @@ under the License.
 
     <target name="dist" depends="clean, compile-all, test-all, site, jar, release-notes, assemble"
             description="Creates the entire distribution into build/dist, from scratch">
+    </target>
+
+    <target name="dist-simple" depends="clean, compile-all, test-all, javadocs, jar, assemble"
+            description="Creates the entire distribution into build/dist, from scratch, skipping the documentation-related stuff that didn't work">
     </target>
 
     <target name="gump" depends="compile-all, test-all, jar"/>
